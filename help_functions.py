@@ -102,3 +102,42 @@ def plot_queens_solution(model, N=8):
     plt.gca().invert_yaxis()  # Invertir eje Y para que se vea como un tablero de ajedrez
     plt.savefig('exercise_3.png')
     plt.close()
+
+
+def plot_transport_heatmap(model, origenes, destinos):
+    """Grafica un heatmap de la solución del problema de transporte con los ejes invertidos e incluye el costo."""
+    
+    data = []
+    for j in destinos:  # Iteramos sobre destinos (filas)
+        for i in origenes:  # Iteramos sobre orígenes (columnas)
+            cantidad = model.x[i, j].value
+            costo_unitario = destinos[j]["costoBog"] if i == 1 else destinos[j]["costoMed"]
+            costo = cantidad * costo_unitario if costo_unitario != np.inf else 0
+            data.append([origenes[i]["nombre"], destinos[j]["nombre"], cantidad, costo])
+    
+    df = pd.DataFrame(data, columns=["Origen", "Destino", "Cantidad", "Costo"])
+    df["Destino"] = pd.Categorical(df["Destino"], categories=[destinos[j]["nombre"] for j in destinos], ordered=True)
+
+
+    # Convertimos a formato de tabla pivote para el heatmap
+    pivot_cantidad = df.pivot(index="Destino", columns="Origen", values="Cantidad")
+    pivot_costo = df.pivot(index="Destino", columns="Origen", values="Costo")
+    pivot_df = df.pivot(index="Destino", columns="Origen", values="Cantidad")
+
+    # Crear etiquetas combinadas para cada celda
+    labels = np.array([[f"{pivot_cantidad.loc[d, o]:.1f}\n({pivot_costo.loc[d, o]:.1f})"
+                        if not np.isnan(pivot_cantidad.loc[d, o]) else ""
+                        for o in pivot_cantidad.columns] for d in pivot_cantidad.index])
+
+    plt.figure(figsize=(8, 6))
+    sns.heatmap(pivot_cantidad, annot=labels, fmt='', cmap="Blues", linewidths=0.8, 
+                xticklabels=pivot_cantidad.columns, yticklabels=pivot_cantidad.index, 
+                cbar_kws={'label': 'Cantidad Transportada'})
+
+    plt.title("Asignación de Transporte", fontsize=14, fontweight="bold")
+    plt.xlabel("Orígenes", fontsize=12)
+    plt.ylabel("Destinos", fontsize=12)
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+    plt.savefig('exercise_2.png')
+    plt.close()
