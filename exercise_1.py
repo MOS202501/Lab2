@@ -24,13 +24,13 @@ Model = ConcreteModel()
 Model.x = Var(recursos_disponibles, aviones_disponibles,
               domain=NonNegativeReals)
 
-# Define an auxiliary integer variable for Carne
-Model.y_equipos_medicos = Var(domain=NonNegativeIntegers)
+Model.y_equipos_medicos = Var(aviones_disponibles, domain=NonNegativeIntegers)
 
+# Luego modifica la restricción
 Model.enteros = ConstraintList()
 for a in aviones_disponibles:
     Model.enteros.add(
-        Model.x[3, a] == 300 * Model.y_equipos_medicos
+        Model.x[3, a] == 300 * Model.y_equipos_medicos[a]
     )
 
 
@@ -71,15 +71,15 @@ Model.compatibilidad = ConstraintList()
 for j in aviones_disponibles:
     Model.compatibilidad.add(Model.y_medicos[j] + Model.y_agua[j] <= 1)
 
-M = sum(avion["peso"] for avion in aviones.values())**2  # Un valor grande
-
+M = (sum(avion["peso"]
+     for avion in aviones.values())**2)*100  # Un valor grande
 for j in aviones_disponibles:
     Model.recurso_medico_activado.add(
-        sum(Model.x[3, j]
-            for i in recursos_disponibles) <= M * Model.y_medicos[j]
+        Model.x[3, j]
+        <= M * Model.y_medicos[j]
     )
     Model.recurso_agua_activado.add(
-        sum(Model.x[4, j] for i in recursos_disponibles) <= M * Model.y_agua[j]
+        Model.x[4, j] <= M * Model.y_agua[j]
     )
 
 
@@ -87,6 +87,7 @@ Solver = SolverFactory('glpk')
 
 Results = Solver.solve(Model)
 
+print(Model.display())
 # Print the matrix representation of X[i, j]
 # Print the matrix in a structured table format
 print("\nX Matrix:")

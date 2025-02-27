@@ -3,6 +3,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import networkx as nx
 
 
 def plot_allocation(Model, recursos_disponibles, aviones_disponibles):
@@ -141,3 +142,85 @@ def plot_transport_heatmap(model, origenes, destinos):
     plt.tight_layout()
     plt.savefig('exercise_2.png')
     plt.close()
+def dibujar_grafo(cost_matrix, ruta, filename='tsp_solution.png'):
+    G = nx.DiGraph()
+    N = len(cost_matrix)
+
+    for i in range(N):
+        for j in range(N):
+            if i != j:
+                G.add_edge(i+1, j+1, weight=cost_matrix[i][j])
+
+    pos = nx.spring_layout(G)
+    plt.figure(figsize=(8, 6))
+    nx.draw(G, pos, with_labels=True, node_color='lightblue',
+            edge_color='gray', node_size=700, font_size=10)
+
+    edge_labels = {(i, j): f"{cost_matrix[i-1][j-1]:.1f}" for i, j in G.edges}
+    nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_size=8)
+
+    # Dibujar ruta óptima en rojo
+    nx.draw_networkx_edges(G, pos, edgelist=ruta, edge_color='red', width=2)
+    plt.savefig(filename)
+    plt.show()
+
+
+def dibujar_grafo_equipos(cost_matrix, rutas, filename='tsp_solution_equipos.png'):
+    G = nx.DiGraph()
+    N = len(cost_matrix)
+
+    # Agregar todos los arcos con su costo
+    for i in range(N):
+        for j in range(N):
+            if i != j:
+                G.add_edge(i+1, j+1, weight=cost_matrix[i][j])
+
+    # Posiciones de los nodos usando un layout
+    pos = nx.spring_layout(G)
+
+    plt.figure(figsize=(8, 6))
+
+    # Dibujar grafo base
+    nx.draw(G, pos, with_labels=True, node_color='lightblue',
+            edge_color='gray', node_size=700, font_size=10)
+
+    # Etiquetas de los arcos con sus costos
+    edge_labels = {(i, j): f"{cost_matrix[i-1][j-1]:.1f}" for i, j in G.edges}
+    nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_size=8)
+
+    # Lista de colores para cada equipo (se cicla si hay más rutas que colores)
+    colores = ['red', 'blue', 'green', 'orange', 'purple',
+               'brown', 'pink', 'olive', 'cyan', 'magenta']
+
+    # Dibujar cada ruta con un color distinto
+    for idx, ruta in enumerate(rutas):
+        # Convertir la lista de nodos en una lista de arcos
+        edge_list = list(zip(ruta, ruta[1:]))
+        color = colores[idx % len(colores)]
+        nx.draw_networkx_edges(G, pos, edgelist=edge_list,
+                               edge_color=color, width=2, label=f'Equipo {idx+1}')
+
+    plt.legend()
+    plt.savefig(filename)
+    plt.show()
+
+
+def dibujar_grafo_sin_ruta(cost_matrix, filename='grafo.png'):
+    G = nx.DiGraph()
+    N = len(cost_matrix)
+
+    for i in range(N):
+        for j in range(N):
+            if i != j:
+                G.add_edge(i+1, j+1, weight=cost_matrix[i][j])
+
+    pos = nx.spring_layout(G)
+    plt.figure(figsize=(8, 6))
+    nx.draw(G, pos, with_labels=True, node_color='lightblue',
+            edge_color='gray', node_size=700, font_size=10)
+
+    edge_labels = {(i, j): f"{cost_matrix[i-1][j-1]:.1f}" for i, j in G.edges}
+    nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_size=8)
+
+    plt.savefig(filename)
+    plt.show()
