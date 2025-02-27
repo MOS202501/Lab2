@@ -6,7 +6,7 @@ from help_functions import *
 
 nodes = 5
 spread = '2.5'
-K = 5  # Puedes modificar este valor según necesites
+K = 3  # Puedes modificar este valor según necesites
 
 
 def leer_matriz_csv(nombre_archivo=f'cost_matrix_{nodes}_nodes_{spread}_spread.csv', folder='Lab2_github/files_support/'):
