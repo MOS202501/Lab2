@@ -142,6 +142,47 @@ def plot_transport_heatmap(model, origenes, destinos):
     plt.tight_layout()
     plt.savefig('exercise_2.png')
     plt.close()
+
+
+def plot_transport_heatmap2(model, origenes, destinos):
+    """Grafica un heatmap de la solución del problema de transporte con los ejes invertidos e incluye el costo."""
+    
+    data = []
+    for j in destinos:  # Iteramos sobre destinos (filas)
+        for i in origenes:  # Iteramos sobre orígenes (columnas)
+            cantidad = model.x[i, j].value
+            costo_unitario = destinos[j]["costoBog"] if i == 1 else destinos[j]["costoMed"]
+            costo = cantidad * costo_unitario if costo_unitario != np.inf else 0
+            data.append([origenes[i]["nombre"], destinos[j]["nombre"], cantidad, costo])
+    
+    df = pd.DataFrame(data, columns=["Origen", "Destino", "Cantidad", "Costo"])
+    df["Destino"] = pd.Categorical(df["Destino"], categories=[destinos[j]["nombre"] for j in destinos], ordered=True)
+
+
+    # Convertimos a formato de tabla pivote para el heatmap
+    pivot_cantidad = df.pivot(index="Destino", columns="Origen", values="Cantidad")
+    pivot_costo = df.pivot(index="Destino", columns="Origen", values="Costo")
+    pivot_df = df.pivot(index="Destino", columns="Origen", values="Cantidad")
+
+    # Crear etiquetas combinadas para cada celda
+    labels = np.array([[f"{pivot_cantidad.loc[d, o]:.1f}\n({pivot_costo.loc[d, o]:.1f})"
+                        if not np.isnan(pivot_cantidad.loc[d, o]) else ""
+                        for o in pivot_cantidad.columns] for d in pivot_cantidad.index])
+
+    plt.figure(figsize=(8, 6))
+    sns.heatmap(pivot_cantidad, annot=labels, fmt='', cmap="Blues", linewidths=0.8, 
+                xticklabels=pivot_cantidad.columns, yticklabels=pivot_cantidad.index, 
+                cbar_kws={'label': 'Cantidad Transportada'})
+
+    plt.title("Asignación de Transporte", fontsize=14, fontweight="bold")
+    plt.xlabel("Orígenes", fontsize=12)
+    plt.ylabel("Destinos", fontsize=12)
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+    plt.savefig('exercise_2_2.png')
+    plt.close()
+
+
 def dibujar_grafo(cost_matrix, ruta, filename='tsp_solution.png'):
     G = nx.DiGraph()
     N = len(cost_matrix)
@@ -224,3 +265,44 @@ def dibujar_grafo_sin_ruta(cost_matrix, filename='grafo.png'):
 
     plt.savefig(filename)
     plt.show()
+
+def graficar_red(datos_nodos, modelo, matriz_costos, ruta_optima=None):
+    """
+    Función para graficar la red con los pesos de las aristas y resaltar la ruta óptima.
+    
+    :param datos_nodos: Diccionario con coordenadas de los nodos {nodo: (x, y)}
+    :param modelo: Modelo de Pyomo con las conexiones definidas en modelo.A
+    :param matriz_costos: Matriz con los costos entre nodos
+    :param ruta_optima: Lista de aristas [(i, j)] que representan la ruta óptima, opcional
+    """
+    G = nx.Graph()
+    
+    # Agregar nodos
+    for nodo, (x, y) in datos_nodos.items():
+        G.add_node(nodo, pos=(x, y))
+    
+    # Agregar aristas con pesos
+    edges_with_weights = []
+    for (i, j) in modelo.A:
+        weight = matriz_costos[i-1, j-1]
+        G.add_edge(i, j, weight=weight)
+        edges_with_weights.append((i, j, weight))
+    
+    # Posiciones de los nodos
+    pos = nx.get_node_attributes(G, 'pos')
+    
+    # Dibujar la red completa con etiquetas de peso
+    plt.figure(figsize=(8, 6))
+    nx.draw(G, pos, with_labels=True, node_color='lightblue', edge_color='gray', node_size=500, font_size=10)
+    # Resaltar la ruta óptima si se proporciona
+    if ruta_optima:
+        nx.draw_networkx_edges(G, pos, edgelist=ruta_optima, edge_color='red', width=2)
+    
+    # Etiquetas de los pesos
+    edge_labels = {(i, j): f"{w:.1f}" for i, j, w in edges_with_weights}
+    nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_size=9, font_color='black')
+    
+    
+    plt.title("Red de conexiones con pesos entre nodos")
+    plt.savefig('exercise_4.png')
+    plt.close()
