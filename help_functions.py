@@ -105,8 +105,8 @@ def plot_queens_solution(model, N=8):
     plt.close()
 
 
-def plot_transport_heatmap(model, origenes, destinos):
-    """Grafica un heatmap de la solución del problema de transporte con los ejes invertidos e incluye el costo."""
+def plot_transport_heatmap(model, origenes, destinos, costo_total):
+    """Grafica un heatmap de la solución del problema de transporte e incluye el costo."""
     
     data = []
     for j in destinos:  # Iteramos sobre destinos (filas)
@@ -135,7 +135,7 @@ def plot_transport_heatmap(model, origenes, destinos):
                 xticklabels=pivot_cantidad.columns, yticklabels=pivot_cantidad.index, 
                 cbar_kws={'label': 'Cantidad Transportada'})
 
-    plt.title("Asignación de Transporte", fontsize=14, fontweight="bold")
+    plt.title(f"Asignación de Transporte\nCosto Total: {costo_total:.2f}", fontsize=14, fontweight="bold")
     plt.xlabel("Orígenes", fontsize=12)
     plt.ylabel("Destinos", fontsize=12)
     plt.xticks(rotation=45)
@@ -144,8 +144,8 @@ def plot_transport_heatmap(model, origenes, destinos):
     plt.close()
 
 
-def plot_transport_heatmap2(model, origenes, destinos):
-    """Grafica un heatmap de la solución del problema de transporte con los ejes invertidos e incluye el costo."""
+def plot_transport_heatmap2(model, origenes, destinos, costo_total):
+    """Grafica un heatmap de la solución del problema de transporte e incluye el costo."""
     
     data = []
     for j in destinos:  # Iteramos sobre destinos (filas)
@@ -174,7 +174,7 @@ def plot_transport_heatmap2(model, origenes, destinos):
                 xticklabels=pivot_cantidad.columns, yticklabels=pivot_cantidad.index, 
                 cbar_kws={'label': 'Cantidad Transportada'})
 
-    plt.title("Asignación de Transporte", fontsize=14, fontweight="bold")
+    plt.title(f"Asignación de Transporte\nCosto Total: {costo_total:.2f}", fontsize=14, fontweight="bold")
     plt.xlabel("Orígenes", fontsize=12)
     plt.ylabel("Destinos", fontsize=12)
     plt.xticks(rotation=45)
